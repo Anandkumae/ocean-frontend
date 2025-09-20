@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 5173",
-    "build": "vite build --emptyOutDir",
-    "postinstall": "vite build",
+    "build": "vite build --emptyOutDir --outDir dist",
+    "postinstall": "vite build --outDir dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
