@@ -12,18 +12,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    sourcemap: true,
-    chunkSizeWarningLimit: 1000, // Increase chunk size limit for the warning
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Split vendor modules into separate chunks
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          // Split leaflet into its own chunk
-          leaflet: ['leaflet', 'leaflet.heat']
-        }
-      }
-    }
+    chunkSizeWarningLimit: 1000
   },
   plugins: [
     react(),
