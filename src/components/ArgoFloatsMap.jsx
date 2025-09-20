@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { HeatmapLayer } from 'react-leaflet-heatmap-layer-v3';
+import HeatmapLayer from 'react-leaflet-heatmap-layer';
 import DepthProfileChart from './DepthProfileChart';
 import FloatFilters from './FloatFilters';
 import { FiX, FiThermometer, FiDroplet, FiFilter } from 'react-icons/fi';
@@ -460,23 +460,18 @@ const ArgoFloatsMap = () => {
           {activeHeatmap && heatmapData.length > 0 && (
             <HeatmapLayer
               key={`heatmap-${activeHeatmap}`}
-              fitBoundsOnLoad={true}
-              fitBoundsOnUpdate={true}
               points={heatmapData}
               longitudeExtractor={m => m.lng}
               latitudeExtractor={m => m.lat}
               intensityExtractor={m => m.value}
               gradient={getGradient()}
-              // Adjusted for Indian Ocean conditions
               max={activeHeatmap === 'temperature' ? 32 : 38}  // Max temperature/salinity in Indian Ocean
               min={activeHeatmap === 'temperature' ? 10 : 30}  // Min temperature/salinity in Indian Ocean
               radius={heatmapRadius}
               opacity={heatmapIntensity}
-              useLocalExtrema={false}  // Use global min/max for consistent coloring
               maxZoom={18}  // Keep heatmap visible when zoomed out
               minOpacity={0.8}  // Increased minimum opacity for better visibility
               blur={40}  // Increased blur for smoother transitions
-              maxIntensity={1.2}  // Slightly increased max intensity for more vibrant colors
               onAdd={(map) => {
                 // Force update the heatmap when added to the map
                 setTimeout(() => {
