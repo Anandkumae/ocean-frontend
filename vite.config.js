@@ -8,7 +8,7 @@ const require = createRequire(import.meta.url);
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/',
+  base: './', // Changed from '/' to './' for relative paths
   publicDir: 'public',
   build: {
     outDir: 'dist',
@@ -16,9 +16,13 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/[name].[hash].js',
-        chunkFileNames: 'assets/[name].[hash].js',
-        assetFileNames: 'assets/[name].[hash][extname]'
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        // Ensure proper module loading
+        format: 'esm',
+        exports: 'named',
+        sourcemap: true
       }
     }
   },
