@@ -475,7 +475,7 @@ const ArgoFloatsMap = () => {
             opacity={0.8}
           />
           
-          {/* Add a semi-transparent color overlay for temperature visualization - Commented out as it requires time parameter */}
+          {/* Add a semi-transparent color overlay for temperature visualization - Commented out as it requires time parameter 
           <TileLayer
             url="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_Land_Surface_Temp_Day/default/2023-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png"
             attribution='Temperature &copy; <a href="https://earthdata.nasa.gov">NASA EOSDIS</a>'
