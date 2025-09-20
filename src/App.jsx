@@ -6,7 +6,7 @@ import './App.css';
 import './components/SuggestedQuestions.css';
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://ocean-backend-1.onrender.com';
 
 // Sample initial bot message
 const initialBotMessage = {
@@ -370,16 +370,17 @@ function AppContent() {
             {darkMode ? <FiSun /> : <FiMoon />}
           </button>
         </div>
-        
+
         <nav className="main-nav">
           <ul>
             <li className={isHomePage ? 'active' : ''}>
-              <Link to="/">Chat</Link>
+              <Link to="/">
+                <FiMessageSquare /> Chat
+              </Link>
             </li>
-            <li className={!isHomePage ? 'active' : ''}>
+            <li className={location.pathname === '/argo-floats' ? 'active' : ''}>
               <Link to="/argo-floats">
-                <FiMap style={{ marginRight: '8px' }} />
-                Argo Floats Map
+                <FiMap /> Argo Floats
               </Link>
             </li>
           </ul>

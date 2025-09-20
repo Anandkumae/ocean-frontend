@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
 });
 
 // API base URL - point to the backend server
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://ocean-backend-1.onrender.com';
 
 const ArgoFloatsMap = () => {
   const [argoFloats, setArgoFloats] = useState([]);
