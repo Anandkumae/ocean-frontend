@@ -1,10 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { createRequire } from 'module';
+import { viteCommonjs } from '@originjs/vite-plugin-commonjs';
 import path from 'path';
+
+const require = createRequire(import.meta.url);
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    viteCommonjs({
+      include: ['leaflet.heat'],
+      exclude: [],
+    }),
+  ],
   resolve: {
     alias: {
       // Ensure React Router and other dependencies are properly resolved
@@ -21,6 +31,17 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api/, ''),
         secure: false,
       },
+    },
+  },
+  optimizeDeps: {
+    include: [
+      'leaflet',
+      'leaflet.heat',
+      'leaflet.heat/dist/leaflet-heat.js'
+    ],
+    esbuildOptions: {
+      // Ensure we can process the CommonJS module
+      target: 'es2020',
     },
   },
   build: {

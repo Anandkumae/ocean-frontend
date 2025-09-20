@@ -1,11 +1,35 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import HeatmapLayer from 'react-leaflet-heatmap-layer';
+import 'leaflet.heat';
+import HeatmapLayer from './HeatmapLayer';
 import DepthProfileChart from './DepthProfileChart';
 import FloatFilters from './FloatFilters';
 import { FiX, FiThermometer, FiDroplet, FiFilter } from 'react-icons/fi';
+
+// Add some styles for the heatmap container
+const heatmapStyles = `
+  .leaflet-heatmap-layer {
+    pointer-events: none;
+  }
+  .heatmap-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 500;
+  }
+`;
+
+// Add styles to the document
+const styleElement = document.createElement('style');
+styleElement.textContent = heatmapStyles;
+if (typeof document !== 'undefined') {
+  document.head.appendChild(styleElement);
+}
 
 // Fix for default marker icons in React-Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
@@ -28,7 +52,6 @@ const ArgoFloatsMap = () => {
   const [selectedFloat, setSelectedFloat] = useState(null);
   const [depthProfileData, setDepthProfileData] = useState([]);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
-  // Heatmap state and settings
   const [activeHeatmap, setActiveHeatmap] = useState('temperature');  // Show temperature by default
   const [heatmapIntensity, setHeatmapIntensity] = useState(0.9);  // Increased default intensity for more vibrant colors
   const [heatmapRadius, setHeatmapRadius] = useState(40);  // Increased default radius for better coverage
@@ -81,7 +104,19 @@ const ArgoFloatsMap = () => {
       })
       .filter(point => !isNaN(point.value) && !isNaN(point.lat) && !isNaN(point.lng)); // Filter out any invalid points
   }, [argoFloats, activeHeatmap]);
-  
+
+  // Fit bounds when heatmap data changes
+  useEffect(() => {
+    if (map && activeHeatmap && heatmapData.length > 0) {
+      const bounds = L.latLngBounds(
+        heatmapData.map(point => [point.lat, point.lng])
+      );
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }
+  }, [map, activeHeatmap, heatmapData]);
+
   // Handle map click to show temperature/salinity at point
   const handleMapClick = useCallback((e) => {
     if (!activeHeatmap || !map || !heatmapData || heatmapData.length === 0) return;
@@ -429,64 +464,35 @@ const ArgoFloatsMap = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           
-          {/* Sea Surface Temperature Layer */}
+          {/* Sea Surface Temperature Layer - Commented out as it requires time parameter */}
+          {/* 
           <TileLayer
-            url="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/{time}/{tileMatrixSet}/{z}/{y}/{x}.jpg"
+            url="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2023-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg"
             attribution='Imagery &copy; <a href="https://earthdata.nasa.gov">NASA EOSDIS</a>'
             tileSize={256}
             maxNativeZoom={8}
             bounds={[[-85, -180], [85, 180]]}
             opacity={0.8}
-            time=""
-            tileMatrixSet="GoogleMapsCompatible_Level8"
-            format="image/jpeg"
           />
           
-          {/* Add a semi-transparent color overlay for temperature visualization */}
+          {/* Add a semi-transparent color overlay for temperature visualization - Commented out as it requires time parameter */}
           <TileLayer
-            url="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_Land_Surface_Temp_Day/default/{time}/{tileMatrixSet}/{z}/{y}/{x}.png"
+            url="https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_Land_Surface_Temp_Day/default/2023-01-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png"
             attribution='Temperature &copy; <a href="https://earthdata.nasa.gov">NASA EOSDIS</a>'
             tileSize={256}
             maxNativeZoom={8}
             bounds={[[-85, -180], [85, 180]]}
-            opacity={0.6}
-            time=""
-            tileMatrixSet="GoogleMapsCompatible_Level8"
-            format="image/png"
-            transparent={true}
           />
+          */}
 
-          {/* Enhanced Heatmap Layer for Indian Ocean */}
           {activeHeatmap && heatmapData.length > 0 && (
             <HeatmapLayer
-              key={`heatmap-${activeHeatmap}`}
               points={heatmapData}
-              longitudeExtractor={m => m.lng}
-              latitudeExtractor={m => m.lat}
-              intensityExtractor={m => m.value}
-              gradient={getGradient()}
-              max={activeHeatmap === 'temperature' ? 32 : 38}  // Max temperature/salinity in Indian Ocean
-              min={activeHeatmap === 'temperature' ? 10 : 30}  // Min temperature/salinity in Indian Ocean
               radius={heatmapRadius}
-              opacity={heatmapIntensity}
-              maxZoom={18}  // Keep heatmap visible when zoomed out
-              minOpacity={0.8}  // Increased minimum opacity for better visibility
-              blur={40}  // Increased blur for smoother transitions
-              onAdd={(map) => {
-                // Force update the heatmap when added to the map
-                setTimeout(() => {
-                  map.invalidateSize();
-                  // Fit to the data bounds if we have data
-                  if (heatmapData.length > 0) {
-                    const bounds = L.latLngBounds(
-                      heatmapData.map(point => [point.lat, point.lng])
-                    );
-                    if (bounds.isValid()) {
-                      map.fitBounds(bounds, { padding: [50, 50] });
-                    }
-                  }
-                }, 0);
-              }}
+              blur={15}
+              maxZoom={18}
+              minOpacity={0.8}
+              gradient={getGradient()}
             />
           )}
 
@@ -499,36 +505,36 @@ const ArgoFloatsMap = () => {
                   <div class="bg-white bg-opacity-95 p-3 rounded-lg shadow-xl border-2 ${
                     clickedPoint.type === 'temperature' ? 'border-blue-200' : 'border-teal-200'
                   } min-w-[180px]">
-                    <div class="flex items-center mb-1">
-                      <span class="text-2xl mr-2">
+                    <div className="flex items-center mb-1">
+                      <span className="text-2xl mr-2">
                         ${clickedPoint.type === 'temperature' ? '🌡️' : '🌊'}
                       </span>
-                      <span class="font-bold text-gray-800">
+                      <span className="font-bold text-gray-800">
                         ${clickedPoint.type === 'temperature' ? 'Temperature' : 'Salinity'}
                       </span>
                     </div>
-                    <div class="text-2xl font-mono font-bold ${
+                    <div className="text-2xl font-mono font-bold ${
                       clickedPoint.type === 'temperature' ? 'text-blue-600' : 'text-teal-600'
                     } mb-1">
-                      ${clickedPoint.value.toFixed(2)}
-                      <span class="text-sm font-normal text-gray-600 ml-1">
+                      ${clickedPoint.value?.toFixed(2) || 'N/A'}
+                      <span className="text-sm font-normal text-gray-600 ml-1">
                         ${clickedPoint.type === 'temperature' ? '°C' : 'PSU'}
                       </span>
                     </div>
-                    <div class="text-xs text-gray-500 mb-1">
+                    <div className="text-xs text-gray-500 mb-1">
                       ${clickedPoint.lat >= 0 ? 
-                        `${clickedPoint.lat.toFixed(2)}°N` : 
-                        `${Math.abs(clickedPoint.lat).toFixed(2)}°S`
+                        `${clickedPoint.lat?.toFixed(2) || '0.00'}°N` : 
+                        `${Math.abs(clickedPoint.lat || 0).toFixed(2)}°S`
                       }, 
                       ${clickedPoint.lng >= 0 ? 
-                        `${clickedPoint.lng.toFixed(2)}°E` : 
-                        `${Math.abs(clickedPoint.lng).toFixed(2)}°W`
+                        `${clickedPoint.lng?.toFixed(2) || '0.00'}°E` : 
+                        `${Math.abs(clickedPoint.lng || 0).toFixed(2)}°W`
                       }
                     </div>
-                    <div class="text-xs text-gray-400 italic">
-                      ${clickedPoint.distance} from nearest data point
+                    <div className="text-xs text-gray-400 italic">
+                      ${clickedPoint.distance || 'N/A'} from nearest data point
                     </div>
-                    <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 
+                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-0 h-0 
                       border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent 
                       ${clickedPoint.type === 'temperature' ? 'border-t-blue-200' : 'border-t-teal-200'}">
                     </div>
@@ -547,7 +553,7 @@ const ArgoFloatsMap = () => {
               }}
             >
               <Popup>
-                <div class="text-sm">
+                <div className="text-sm">
                   Click to close
                 </div>
               </Popup>
