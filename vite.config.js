@@ -8,6 +8,12 @@ const require = createRequire(import.meta.url);
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    sourcemap: true
+  },
   plugins: [
     react(),
     viteCommonjs({
