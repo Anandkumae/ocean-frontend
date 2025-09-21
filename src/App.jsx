@@ -195,7 +195,7 @@ function AppContent() {
   const [messages, setMessages] = useState([initialBotMessage]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true); // Set dark mode as default
   const [isListening, setIsListening] = useState(false);
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
   const recognitionRef = useRef(null);
@@ -357,18 +357,24 @@ function AppContent() {
     <div className={`app theme-transition ${darkMode ? 'dark-mode' : ''}`}>
       <header className="app-header">
         <div className="header-content">
+          <div className="header-left">
+            <label className="theme-switch">
+              <input 
+                type="checkbox" 
+                checked={darkMode}
+                onChange={toggleDarkMode}
+                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              />
+              <span className="slider round">
+                <span className="icon">
+                  {darkMode ? <FiSun /> : <FiMoon />}
+                </span>
+              </span>
+            </label>
+          </div>
           <div className="header-title">
             <h1>Ocean Data Assistant</h1>
-            <p>Ask me anything about ocean temperature, salinity, and more</p>
           </div>
-          <button 
-            className="theme-toggle"
-            onClick={toggleDarkMode}
-            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {darkMode ? <FiSun /> : <FiMoon />}
-          </button>
         </div>
 
         <nav className="main-nav">

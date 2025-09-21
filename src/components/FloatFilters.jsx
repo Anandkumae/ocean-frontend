@@ -42,7 +42,7 @@ const FilterSection = ({ title, defaultOpen = true, children }) => {
 
 const FloatFilters = ({ onFilterChange, isLoading }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true); // Minimized by default
   const [filters, setFilters] = useState({
     latMin: '',
     latMax: '',
