@@ -200,6 +200,8 @@ function AppContent() {
   const [isSpeechSupported, setIsSpeechSupported] = useState(false);
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const chatContainerRef = useRef(null);
 
   // Check if speech recognition is supported
   useEffect(() => {
@@ -281,10 +283,38 @@ function AppContent() {
     };
   }, [darkMode]);
 
-  // Auto-scroll to bottom of messages
+  // Scroll to bottom of chat when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Handle mobile input focus and scrolling
+  useEffect(() => {
+    const handleFocus = () => {
+      // Small timeout to ensure the keyboard is shown
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+          });
+        }
+      }, 300);
+    };
+
+    const inputElement = inputRef.current;
+    if (inputElement) {
+      inputElement.addEventListener('focus', handleFocus);
+    }
+
+    // Cleanup
+    return () => {
+      if (inputElement) {
+        inputElement.removeEventListener('focus', handleFocus);
+      }
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -398,8 +428,8 @@ function AppContent() {
           path="/" 
           element={
             <>
-              <main className="chat-container">
-                <div className="chat-messages">
+              <div className="chat-container" ref={chatContainerRef}>
+                <div className="messages" style={{ paddingBottom: '80px' }}>
                   {messages.map((message) => (
                     <div
                       key={message.id}
@@ -573,7 +603,7 @@ function AppContent() {
                 </div>
 
                 <form onSubmit={handleSendMessage} className="message-form">
-                  <div className="input-container">
+                  <div className="input-container" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'var(--background)', padding: '10px', boxShadow: '0 -2px 10px rgba(0,0,0,0.1)' }}>
                     <div className="input-wrapper">
                       <input
                         type="text"
@@ -605,7 +635,7 @@ function AppContent() {
                     </div>
                   </div>
                 </form>
-              </main>
+              </div>
             </>
           } 
         />
